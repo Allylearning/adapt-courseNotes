@@ -1,0 +1,7 @@
+  // add to course json
+  "_courseNotes": {
+    "_isEnabled": true,
+    "displayTitle": "Course Notes",
+    "instruction": "Enter any notes you wish to include with this course.",
+    "placeholder": "Write notes here...",
+  }

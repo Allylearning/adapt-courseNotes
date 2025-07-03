@@ -1,0 +1,19 @@
+{
+  "name": "adapt-courseNotes",
+  "version": "1.0.0",
+  "framework": ">=5.17.7",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nachocinalli/adapt-courseNotes.git"
+  },
+  "homepage": "https://github.com/nachocinalli/courseNotes",
+  "issues": "https://github.com/nachocinalli/courseNotes/issues",
+  "displayName": "Course Notes",
+  "extension": "courseNotes",
+  "description": "The course notes extension allows you to save text notes using local storage",
+  "main": "/js/adapt-courseNotes.js",
+  "keywords": ["adapt-plugin", "adapt-extension"],
+  "authors": ["Nacho Cinalli <nachocinalli@gmail.com>"],
+  "license": "GPLv3",
+  "targetAttribute": "_courseNotes"
+}
