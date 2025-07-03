@@ -8,19 +8,8 @@
     padding: 1rem 0 2rem;
     position: relative;
 
-    &__controls {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
-
-      &__download-btn {
-        width: -webkit-fill-available;
-      }
-
       &__status {
         padding: .5rem;
-      }
     }
   }
   textarea {
@@ -33,4 +22,16 @@
     resize: none;
   }
  
+}
+
+.coursenotes__controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.coursenotes__download-btn {
+  width: -webkit-fill-available;
+  max-width: 400px;
 }
