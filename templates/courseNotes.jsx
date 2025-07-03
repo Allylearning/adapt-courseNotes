@@ -50,15 +50,17 @@ export default function CourseNotes(props) {
         </div>
       }
       <div className="coursenotes__widget">
-        {wasChanged && <div className={`coursenotes__status icon ${isSaved ? 'icon-tick' : 'icon-ellipsis'}`}></div>}
         <textarea
           placeholder={placeholder}
           value={valueTextArea}
           onChange={handleChange}
-        ></textarea>
-        <button className="coursenotes__download-btn btn-text" onClick={downloadNotes}>
-          Download Notes
-        </button>
+        />
+        <div className="coursenotes__controls">
+          {wasChanged && <div className={`coursenotes__status icon ${isSaved ? 'icon-tick' : 'icon-ellipsis'}`}></div>}
+          <button className="coursenotes__download-btn btn-text" onClick={downloadNotes} style={{ width: '-webkit-fill-available' }}>
+            Download Notes
+          </button>
+        </div>
       </div>
     </div>
   );
