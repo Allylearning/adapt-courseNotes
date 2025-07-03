@@ -1,6 +1,6 @@
 {
   "name": "adapt-courseNotes",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "framework": ">=5.17.7",
   "repository": {
     "type": "git",
