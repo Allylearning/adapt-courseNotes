@@ -1,5 +1,4 @@
 import Adapt from 'core/js/adapt';
-import location from 'core/js/location';
 import Backbone from 'backbone';
 import notify from 'core/js/notify';
 import CourseNotesView from './CourseNotesView';
@@ -69,33 +68,21 @@ class CourseNotes extends Backbone.Controller {
     $('.js-coursenotes-click').off('click', this.handleClick);
   }
 
-  getCourseId() {
-    return Adapt.course?.get('_id') || 'defaultCourse';
+  getCourseStorageId() {
+    const modelCourseId = Adapt.course?.get('_id');
+    if (modelCourseId) return modelCourseId;
+
+    const path = window.location?.pathname || '';
+    if (path) return `path:${path}`;
+
+    const title = Adapt.course?.get('title');
+    if (title) return `title:${title}`;
+
+    return 'course:unknown';
   }
 
-  getNotesScopeId() {
-    const currentId = location?._currentId;
-    if (!currentId) return `course:${this.getCourseId()}`;
-
-    const currentModel = (typeof Adapt.findById === 'function') ? Adapt.findById(currentId) : null;
-    let model = currentModel;
-    let guard = 0;
-
-    while (model && guard < 10) {
-      const type = `${model.get('_type') || ''}`.toLowerCase();
-      if (type === 'contentobject' || type === 'content-object') {
-        return `contentobject:${model.get('_id') || currentId}`;
-      }
-      model = model.getParent ? model.getParent() : null;
-      guard++;
-    }
-
-    return `page:${currentId}`;
-  }
-
-  getAnswersStorageKey(scopeId) {
-    const resolvedScopeId = scopeId || this.getNotesScopeId();
-    return `adaptCourseNotesAnswers:${this.getCourseId()}:${resolvedScopeId}`;
+  getAnswersStorageKey() {
+    return `adaptCourseNotesAnswers:${this.getCourseStorageId()}`;
   }
 
   handleAddAnswer(payload) {
@@ -106,7 +93,7 @@ class CourseNotes extends Backbone.Controller {
     const answer = `${entry.answer || ''}`.trim();
     if (!answer) return;
 
-    const answersStorageKey = this.getAnswersStorageKey(entry.scopeId);
+    const answersStorageKey = this.getAnswersStorageKey();
     let existingEntries = [];
     try {
       existingEntries = JSON.parse(localStorage.getItem(answersStorageKey) || '[]');
