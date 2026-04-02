@@ -8,7 +8,7 @@ export default function CourseNotes(props) {
   const { displayTitle, instruction, placeholder } = props;
   const globals = Adapt.course.get('_globals');
   const extensionGlobals = globals?._extensions?._courseNotes;
-  const downloadButtonText = extensionGlobals?.downloadButtonText || 'Download .docx';
+  const downloadButtonText = extensionGlobals?.downloadButtonText || 'Download notes';
   const courseTitle = Adapt.course.get('title');
   const answersStorageKey = `adaptCourseNotesAnswers:${courseId}`;
   const answersSectionTitle = extensionGlobals?.answersSectionTitle || 'Captured Answers';
@@ -267,6 +267,29 @@ export default function CourseNotes(props) {
           value={valueTextArea}
           onChange={handleChange}
         />
+        {capturedAnswers.length > 0 &&
+          <div className="coursenotes__answers">
+            <h3 className="coursenotes__answers-title">{answersSectionTitle}</h3>
+            {capturedAnswers.map((entry, index) => (
+              <div className="coursenotes__answer-item" key={entry.componentId || index}>
+                <div className="coursenotes__answer-question">
+                  {entry.question || `Answer ${index + 1}`}
+                </div>
+                {entry.questionBody &&
+                  <div className="coursenotes__answer-body">
+                    {stripHtml(entry.questionBody)}
+                  </div>
+                }
+                <div className="coursenotes__answer-value">
+                  {entry.answer}
+                </div>
+                {entry.pageTitle &&
+                  <div className="coursenotes__answer-page">Page: {entry.pageTitle}</div>
+                }
+              </div>
+            ))}
+          </div>
+        }
         <div className="coursenotes__controls">
           <div className={`coursenotes__status icon ${wasChanged ? (isSaved ? 'icon-tick' : 'icon-ellipsis') : ''}`}></div>
           <button className="coursenotes__download-btn btn-text" onClick={downloadNotes}>
