@@ -237,7 +237,45 @@ export default function CourseNotes(props) {
   };
 
   const downloadTxtFallback = () => {
-    const blob = new Blob([valueTextArea], { type: 'text/plain' });
+    const lines = [];
+    const compiledTitle = displayTitle ? stripHtml(compile(displayTitle, props)) : '';
+    const compiledInstruction = instruction ? stripHtml(compile(instruction, props)) : '';
+
+    if (compiledTitle) lines.push(compiledTitle);
+    if (compiledInstruction) lines.push(compiledInstruction);
+    if (compiledTitle || compiledInstruction) {
+      lines.push('----------------------------------------');
+    }
+
+    lines.push('My Notes');
+    lines.push('');
+    if (valueTextArea.trim()) {
+      lines.push(valueTextArea);
+    } else {
+      lines.push('No notes available.');
+    }
+
+    if (capturedAnswers.length) {
+      lines.push('');
+      lines.push('----------------------------------------');
+      lines.push(answersSectionTitle);
+      lines.push('');
+
+      capturedAnswers.forEach((entry, index) => {
+        const questionLine = entry.question || `Learner answer ${index + 1}`;
+        const formattedTimestamp = formatTimestamp(entry.timestamp);
+
+        lines.push(questionLine);
+        if (entry.questionBody) lines.push(`Question body: ${stripHtml(entry.questionBody)}`);
+        lines.push(`Answer: ${entry.answer || ''}`);
+        if (entry.pageTitle) lines.push(`Page: ${entry.pageTitle}`);
+        if (formattedTimestamp) lines.push(`Submitted: ${formattedTimestamp}`);
+        lines.push('');
+      });
+    }
+
+    const output = `${lines.join('\n')}\n`;
+    const blob = new Blob([output], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.download = `${getBaseFileName()}.txt`;
