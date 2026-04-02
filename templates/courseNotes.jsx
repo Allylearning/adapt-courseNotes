@@ -156,6 +156,24 @@ export default function CourseNotes(props) {
     URL.revokeObjectURL(url);
   };
 
+  const clearNotes = () => {
+    const shouldClear = window.confirm('Clear all saved notes and captured answers?');
+    if (!shouldClear) return;
+
+    try {
+      localStorage.removeItem(localStorageKey);
+      localStorage.removeItem(answersStorageKey);
+    } catch (error) {
+      // Keep UI in sync even if storage operations fail silently.
+    }
+
+    setValueTextArea('');
+    setCapturedAnswers([]);
+    setWasChanged(false);
+    setIsSaved(true);
+    Adapt.trigger('courseNotes:answersUpdated');
+  };
+
   return (
     <div className="coursenotes__header">
       {displayTitle &&
@@ -204,6 +222,9 @@ export default function CourseNotes(props) {
           <div className={`coursenotes__status icon ${wasChanged ? (isSaved ? 'icon-tick' : 'icon-ellipsis') : ''}`}></div>
           <button className="coursenotes__download-btn btn-text" onClick={downloadNotes}>
             {downloadButtonText}
+          </button>
+          <button className="coursenotes__reset-btn btn-text" onClick={clearNotes}>
+            Clear notes
           </button>
         </div>
       </div>
