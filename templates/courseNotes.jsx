@@ -1,17 +1,39 @@
 import Adapt from 'core/js/adapt';
+import location from 'core/js/location';
 import React, { useCallback, useEffect, useState } from 'react';
 import { compile } from 'core/js/reactHelpers';
 export default function CourseNotes(props) {
 
   const courseId = Adapt.course?.get('_id') || 'defaultCourse';
-  const localStorageKey = `adaptCourseNotes:${courseId}`;
   const { displayTitle, instruction, placeholder } = props;
   const globals = Adapt.course.get('_globals');
   const extensionGlobals = globals?._extensions?._courseNotes;
   const downloadButtonText = extensionGlobals?.downloadButtonText || 'Download notes';
   const courseTitle = Adapt.course.get('title');
-  const answersStorageKey = `adaptCourseNotesAnswers:${courseId}`;
   const answersSectionTitle = extensionGlobals?.answersSectionTitle || 'Captured Answers';
+  const getNotesScopeId = () => {
+    const currentId = location?._currentId;
+    if (!currentId) return `course:${courseId}`;
+
+    const findById = Adapt.findById;
+    const currentModel = (typeof findById === 'function') ? findById(currentId) : null;
+    let model = currentModel;
+    let guard = 0;
+
+    while (model && guard < 10) {
+      const type = `${model.get('_type') || ''}`.toLowerCase();
+      if (type === 'contentobject' || type === 'content-object') {
+        return `contentobject:${model.get('_id') || currentId}`;
+      }
+      model = model.getParent ? model.getParent() : null;
+      guard++;
+    }
+
+    return `page:${currentId}`;
+  };
+  const notesScopeId = getNotesScopeId();
+  const localStorageKey = `adaptCourseNotes:${courseId}:${notesScopeId}`;
+  const answersStorageKey = `adaptCourseNotesAnswers:${courseId}:${notesScopeId}`;
 
   const storage = localStorage.getItem(localStorageKey) || '';
   const [valueTextArea, setValueTextArea] = useState(storage);
@@ -72,13 +94,6 @@ export default function CourseNotes(props) {
 
   const getBaseFileName = () => `${sanitizeFileName(stripHtml(courseTitle || 'Course'))}_Notes`;
 
-  const addSectionDivider = (children, ParagraphCtor, TextRunCtor) => {
-    children.push(new ParagraphCtor({
-      children: [new TextRunCtor('----------------------------------------')],
-      spacing: { before: 120, after: 120 }
-    }));
-  };
-
   const formatTimestamp = (value) => {
     if (!value) return '';
     const date = new Date(value);
@@ -99,146 +114,8 @@ export default function CourseNotes(props) {
     return `${parts.day} ${parts.month} ${parts.year} ${parts.hour}:${parts.minute}`;
   };
 
-  const downloadNotes = async () => {
-    try {
-      const docxCandidate = window.docx;
-      const docxLib = (docxCandidate && docxCandidate.Document)
-        ? docxCandidate
-        : (docxCandidate && docxCandidate.default && docxCandidate.default.Document ? docxCandidate.default : null);
-      if (!docxLib) {
-        console.warn('coursenotes: docx API unavailable, falling back to txt export.');
-        downloadTxtFallback();
-        return;
-      }
-      const { Document, HeadingLevel, Packer, Paragraph, TextRun } = docxLib;
-      const children = [];
-
-      if (displayTitle) {
-        children.push(new Paragraph({
-          text: stripHtml(compile(displayTitle, props)),
-          heading: HeadingLevel.HEADING_1,
-          spacing: { after: 200 }
-        }));
-      }
-
-      if (instruction) {
-        children.push(new Paragraph({
-          children: [new TextRun(stripHtml(compile(instruction, props)))],
-          spacing: { after: 200 }
-        }));
-      }
-
-      addSectionDivider(children, Paragraph, TextRun);
-
-      children.push(new Paragraph({
-        text: 'My Notes',
-        heading: HeadingLevel.HEADING_2,
-        spacing: { after: 160 }
-      }));
-
-      const noteLines = valueTextArea.split(/\r?\n/);
-      noteLines.forEach((line) => {
-        if (!line.trim()) return;
-        children.push(new Paragraph({
-          children: [new TextRun(line)],
-          spacing: { after: 80 }
-        }));
-      });
-
-      if (capturedAnswers.length) {
-        addSectionDivider(children, Paragraph, TextRun);
-        children.push(new Paragraph({
-          text: answersSectionTitle,
-          heading: HeadingLevel.HEADING_2,
-          spacing: { after: 160 }
-        }));
-        capturedAnswers.forEach((entry) => {
-          const questionLine = entry.question ? `${entry.question}` : 'Learner answer';
-          const formattedTimestamp = formatTimestamp(entry.timestamp);
-          children.push(new Paragraph({
-            children: [new TextRun({
-              text: questionLine,
-              bold: true
-            })],
-            spacing: { after: 40 }
-          }));
-
-          if (entry.questionBody) {
-            children.push(new Paragraph({
-              children: [new TextRun({
-                text: stripHtml(entry.questionBody),
-                italics: true
-              })],
-              spacing: { after: 40 }
-            }));
-          }
-
-          children.push(new Paragraph({
-            children: [new TextRun(`${entry.answer}`)],
-            bullet: { level: 0 },
-            spacing: { after: 80 }
-          }));
-
-          if (entry.pageTitle) {
-            children.push(new Paragraph({
-              children: [new TextRun({
-                text: `Page: ${entry.pageTitle}`,
-                italics: true
-              })],
-              spacing: { after: 120 }
-            }));
-          }
-
-          if (formattedTimestamp) {
-            children.push(new Paragraph({
-              children: [new TextRun({
-                text: `Submitted: ${formattedTimestamp}`,
-                italics: true
-              })],
-              spacing: { after: 120 }
-            }));
-          }
-        });
-      }
-
-      if (!children.length) {
-        children.push(new Paragraph({
-          text: 'Notes',
-          heading: HeadingLevel.HEADING_1
-        }));
-        children.push(new Paragraph({
-          children: [new TextRun('No notes available.')],
-          spacing: { before: 120 }
-        }));
-      }
-
-      const doc = new Document({
-        creator: 'adapt-courseNotes',
-        title: `${stripHtml(courseTitle || 'Course')} Notes`,
-        description: 'Learner notes export',
-        sections: [{
-          properties: {},
-          children
-        }]
-      });
-
-      const blob = await Packer.toBlob(doc);
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      const baseFileName = getBaseFileName();
-      const configuredFileName = extensionGlobals?.downloadFileName;
-      const outputFileName = configuredFileName
-        ? (configuredFileName.endsWith('.docx') ? configuredFileName : `${configuredFileName}.docx`)
-        : `${baseFileName}.docx`;
-      link.download = outputFileName;
-      link.href = url;
-      link.click();
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      // Keep export working even if docx generation fails in older environments.
-      console.error('coursenotes: docx export failed, falling back to txt export.', error);
-      downloadTxtFallback();
-    }
+  const downloadNotes = () => {
+    downloadTxtFallback();
   };
 
   const downloadTxtFallback = () => {

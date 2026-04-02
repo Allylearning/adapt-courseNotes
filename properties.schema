@@ -18,13 +18,6 @@
 			"inputType": "Text",
 			"translatable": true
 		},
-		"downloadFileName": {
-			"type": "string",
-			"default": "MyCourseNotes.docx",
-			"title": "Download filename",
-			"inputType": "Text",
-			"translatable": true
-		},
 		"answersSectionTitle": {
 			"type": "string",
 			"default": "Captured Answers",
