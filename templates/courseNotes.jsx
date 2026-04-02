@@ -101,8 +101,12 @@ export default function CourseNotes(props) {
 
   const downloadNotes = async () => {
     try {
-      const docxLib = window.docx;
+      const docxCandidate = window.docx;
+      const docxLib = (docxCandidate && docxCandidate.Document)
+        ? docxCandidate
+        : (docxCandidate && docxCandidate.default && docxCandidate.default.Document ? docxCandidate.default : null);
       if (!docxLib) {
+        console.warn('coursenotes: docx API unavailable, falling back to txt export.');
         downloadTxtFallback();
         return;
       }
@@ -232,6 +236,7 @@ export default function CourseNotes(props) {
       URL.revokeObjectURL(url);
     } catch (error) {
       // Keep export working even if docx generation fails in older environments.
+      console.error('coursenotes: docx export failed, falling back to txt export.', error);
       downloadTxtFallback();
     }
   };
