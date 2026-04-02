@@ -1,6 +1,5 @@
 import Adapt from 'core/js/adapt';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Document, HeadingLevel, Packer, Paragraph, TextRun } from 'docx';
 import { compile } from 'core/js/reactHelpers';
 export default function CourseNotes(props) {
 
@@ -73,9 +72,9 @@ export default function CourseNotes(props) {
 
   const getBaseFileName = () => `${sanitizeFileName(stripHtml(courseTitle || 'Course'))}_Notes`;
 
-  const addSectionDivider = (children) => {
-    children.push(new Paragraph({
-      children: [new TextRun('----------------------------------------')],
+  const addSectionDivider = (children, ParagraphCtor, TextRunCtor) => {
+    children.push(new ParagraphCtor({
+      children: [new TextRunCtor('----------------------------------------')],
       spacing: { before: 120, after: 120 }
     }));
   };
@@ -102,6 +101,12 @@ export default function CourseNotes(props) {
 
   const downloadNotes = async () => {
     try {
+      const docxLib = window.docx;
+      if (!docxLib) {
+        downloadTxtFallback();
+        return;
+      }
+      const { Document, HeadingLevel, Packer, Paragraph, TextRun } = docxLib;
       const children = [];
 
       if (displayTitle) {
@@ -119,7 +124,7 @@ export default function CourseNotes(props) {
         }));
       }
 
-      addSectionDivider(children);
+      addSectionDivider(children, Paragraph, TextRun);
 
       children.push(new Paragraph({
         text: 'My Notes',
@@ -137,7 +142,7 @@ export default function CourseNotes(props) {
       });
 
       if (capturedAnswers.length) {
-        addSectionDivider(children);
+        addSectionDivider(children, Paragraph, TextRun);
         children.push(new Paragraph({
           text: answersSectionTitle,
           heading: HeadingLevel.HEADING_2,
