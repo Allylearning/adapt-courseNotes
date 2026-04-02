@@ -5,6 +5,8 @@ import CourseNotesView from './CourseNotesView';
 import CourseNotesNavView from './CourseNotesNavView';
 class CourseNotes extends Backbone.Controller {
   initialize() {
+    this.handleClick = this.handleClick.bind(this);
+    this.handleAddAnswer = this.handleAddAnswer.bind(this);
     this.listenTo(Adapt, 'app:dataReady', this.onDataReady);
   }
 
@@ -17,6 +19,7 @@ class CourseNotes extends Backbone.Controller {
     this.listenTo(Adapt, {
       'adapt:initialize': this.onInitialize,
       'courseNotes:open': this.openCourseNotes,
+      'courseNotes:addAnswer': this.handleAddAnswer,
       'pageView:ready': this.handlePageViewReady,
       'pageView:preRemove': this.handlePageViewPreRemove
     });
@@ -58,11 +61,59 @@ class CourseNotes extends Backbone.Controller {
   }
 
   handlePageViewReady(view) {
-    $('.js-coursenotes-click').on('click', this.handleClick.bind(this));
+    $('.js-coursenotes-click').on('click', this.handleClick);
   }
 
   handlePageViewPreRemove() {
-    $('.js-coursenotes-click').off('click', this.handleClick.bind(this));
+    $('.js-coursenotes-click').off('click', this.handleClick);
+  }
+
+  getCourseId() {
+    return Adapt.course?.get('_id') || 'defaultCourse';
+  }
+
+  getAnswersStorageKey() {
+    return `adaptCourseNotesAnswers:${this.getCourseId()}`;
+  }
+
+  handleAddAnswer(payload) {
+    const entry = (typeof payload === 'string')
+      ? { answer: payload }
+      : (payload || {});
+
+    const answer = `${entry.answer || ''}`.trim();
+    if (!answer) return;
+
+    const answersStorageKey = this.getAnswersStorageKey();
+    let existingEntries = [];
+    try {
+      existingEntries = JSON.parse(localStorage.getItem(answersStorageKey) || '[]');
+      if (!Array.isArray(existingEntries)) existingEntries = [];
+    } catch (error) {
+      existingEntries = [];
+    }
+
+    const nextEntry = {
+      question: entry.question || '',
+      questionBody: entry.questionBody || '',
+      answer,
+      componentId: entry.componentId || '',
+      pageTitle: entry.pageTitle || '',
+      timestamp: new Date().toISOString()
+    };
+
+    const existingIndex = nextEntry.componentId
+      ? existingEntries.findIndex(item => item.componentId === nextEntry.componentId)
+      : -1;
+
+    if (existingIndex >= 0) {
+      existingEntries[existingIndex] = nextEntry;
+    } else {
+      existingEntries.push(nextEntry);
+    }
+
+    localStorage.setItem(answersStorageKey, JSON.stringify(existingEntries));
+    Adapt.trigger('courseNotes:answersUpdated');
   }
 
   checkIsEnabled() {

@@ -6,8 +6,8 @@
     "type": "git",
     "url": "https://github.com/nachocinalli/adapt-courseNotes.git"
   },
-  "homepage": "https://github.com/nachocinalli/courseNotes",
-  "issues": "https://github.com/nachocinalli/courseNotes/issues",
+  "homepage": "https://github.com/nachocinalli/adapt-courseNotes",
+  "issues": "https://github.com/nachocinalli/adapt-courseNotes/issues",
   "displayName": "Course Notes",
   "extension": "courseNotes",
   "description": "The course notes extension allows you to save text notes using local storage",

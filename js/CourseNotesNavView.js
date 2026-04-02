@@ -1,4 +1,4 @@
-
+import Backbone from 'backbone';
 import { templates } from 'core/js/reactHelpers';
 import Adapt from 'core/js/adapt';
 import React from 'react';
