@@ -196,30 +196,52 @@ export default function CourseNotes(props) {
           onChange={handleChange}
         />
         {capturedAnswers.length > 0 &&
-          <div className="coursenotes__answers">
+          <>
             <div className="coursenotes__answers-title">{answersSectionTitle}</div>
-            {capturedAnswers.map((entry, index) => (
-              <div className="coursenotes__answer-item" key={entry.componentId || index}>
-                <div className="coursenotes__answer-question">
-                  {entry.question || `Answer ${index + 1}`}
-                </div>
-                {entry.questionBody &&
-                  <div className="coursenotes__answer-body">
-                    {stripHtml(entry.questionBody)}
+            <div className="coursenotes__answers">
+              {capturedAnswers.map((entry, index) => (
+                <div className="coursenotes__answer-item" key={entry.componentId || index}>
+                  <div className="coursenotes__answer-question">
+                    {entry.question || `Answer ${index + 1}`}
                   </div>
-                }
-                <div className="coursenotes__answer-value">
-                  {entry.answer}
+                  {entry.questionBody &&
+                    <div className="coursenotes__answer-body">
+                      {stripHtml(entry.questionBody)}
+                    </div>
+                  }
+                  <div className="coursenotes__answer-value">
+                    {entry.answer}
+                  </div>
+                  {entry.pageTitle &&
+                    <div className="coursenotes__answer-page">Page: {entry.pageTitle}</div>
+                  }
                 </div>
-                {entry.pageTitle &&
-                  <div className="coursenotes__answer-page">Page: {entry.pageTitle}</div>
-                }
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </>
         }
         <div className="coursenotes__controls">
-          <div className={`coursenotes__status icon ${wasChanged ? (isSaved ? 'icon-tick' : 'icon-ellipsis') : ''}`}></div>
+          <div className="coursenotes__status" aria-hidden="true">
+            {wasChanged && !isSaved &&
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <path fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M12 6.99998C9.1747 6.99987 6.99997 9.24998 7 12C7.00003 14.55 9.02119 17 12 17C14.7712 17 17 14.75 17 12">
+                  <animateTransform attributeName="transform" attributeType="XML" dur="560ms" from="0,12,12" repeatCount="indefinite" to="360,12,12" type="rotate" />
+                </path>
+              </svg>
+            }
+            {wasChanged && isSaved &&
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <g stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2">
+                  <path fill="currentColor" fillOpacity="0.3" d="M3 12c0 -4.97 4.03 -9 9 -9c4.97 0 9 4.03 9 9c0 4.97 -4.03 9 -9 9c-4.97 0 -9 -4.03 -9 -9Z">
+                    <animate fill="freeze" attributeName="fill-opacity" dur="0.2s" values="0;0.3" />
+                  </path>
+                  <path fill="none" strokeDasharray="14" strokeDashoffset="14" d="M8 12l3 3l5 -5">
+                    <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.2s" dur="0.2s" to="0" />
+                  </path>
+                </g>
+              </svg>
+            }
+          </div>
           <button className="coursenotes__download-btn btn-text" onClick={downloadNotes}>
             {downloadButtonText}
           </button>
