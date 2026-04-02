@@ -269,7 +269,7 @@ export default function CourseNotes(props) {
         />
         {capturedAnswers.length > 0 &&
           <div className="coursenotes__answers">
-            <h3 className="coursenotes__answers-title">{answersSectionTitle}</h3>
+            <div className="coursenotes__answers-title">{answersSectionTitle}</div>
             {capturedAnswers.map((entry, index) => (
               <div className="coursenotes__answer-item" key={entry.componentId || index}>
                 <div className="coursenotes__answer-question">

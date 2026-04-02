@@ -13,7 +13,7 @@
 		},
 		"downloadButtonText": {
 			"type": "string",
-			"default": "Download .docx",
+			"default": "Download notes",
 			"title": "Download button text",
 			"inputType": "Text",
 			"translatable": true
